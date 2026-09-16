@@ -1,0 +1,14 @@
+Documentation license: Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Everything under docs/ and both README files are licensed CC BY 4.0.
+You may copy, quote, translate and adapt this text, including for commercial
+purposes, as long as you credit the source and link back to this repository.
+
+Full text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+The program itself is licensed separately, under MIT: see LICENSE.
+
+This repository documents file formats and lists entity names obtained by
+examining the game's own data. It contains no game content: no archives, no
+assets, no text extracted from them. Rise of Legends is the property of its
+rights holders.

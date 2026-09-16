@@ -1,0 +1,25 @@
+#!/bin/sh
+# commit-msg hook for this repository (enable once per clone:
+#   git config core.hooksPath .githooks).
+#
+# Rule of this repository: the message is the subject line only.
+# No body, no trailers - in particular nothing about Claude
+# (Co-Authored-By: Claude ..., Claude-Session: ...). The rule is advisory; this hook is what makes it hold.
+#
+# ASCII only on purpose: Git for Windows runs hooks through its own sh, and a
+# UTF-8 file without BOM is the safest thing to hand it.
+
+msg=$(grep -v '^#' "$1")
+
+if printf '%s\n' "$msg" | grep -qiE '^(Co-Authored-By:.*Claude|Claude-Session:)'; then
+  echo "commit-msg: trailers about Claude are not allowed in this repository (repository rule). Remove the Co-Authored-By / Claude-Session lines." >&2
+  exit 1
+fi
+
+lines=$(printf '%s\n' "$msg" | grep -c -v '^[[:space:]]*$')
+if [ "$lines" -gt 1 ]; then
+  echo "commit-msg: the message must be the subject line only - no body, no trailers (repository rule). Got $lines non-empty lines." >&2
+  exit 1
+fi
+
+exit 0
