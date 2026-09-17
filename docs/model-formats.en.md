@@ -117,14 +117,21 @@ skeletons at once.
 | 44 + len | `int32` | flags, values 0…3 |
 
 **Do not treat the tail after the name as a fixed size.** For chunk 7 it is 36
-bytes on 23,595 bones and 44 on the remaining 34; for chunk 111 it is 84 bytes
-on 470 bones and 80 on 44. In other words chunk 111 adds **48 bytes** of joint
-description to an ordinary bone, not 44, and a layout written as "bone plus 44"
-misses by four bytes nine times out of ten. Derive the tail length from the
-chunk's `size` instead of hardcoding a constant. Inside those 48 bytes the
-numbers are recognisably rotation limits (0.5236 = 30°, 0.7854 = 45°). Bones
-with a joint occur in 46 models, PhysX collision in eight, and those eight are a
-subset of the forty-six.
+bytes on 23,595 bones and 44 on the remaining 34. Chunk 111 adds a joint block
+on top of those same 36 bytes, and the block is **self-describing**: an `int32`
+of its length comes first, then that many bytes of description. Across the
+shipped data there are exactly two variants, with no exceptions:
+
+| length field | whole block | bones |
+|---|---|---|
+| 44 | 48 bytes | 470 |
+| 40 | 44 bytes | 44 |
+
+So there is no constant to hardcode at all — read the length out of the block
+itself, and use the chunk's `size` to check that what you read adds up. The
+description contains recognisable rotation limits (0.5236 = 30°, 0.7854 = 45°).
+Bones with a joint occur in 46 models, PhysX collision in eight, and those eight
+are a subset of the forty-six.
 
 **The name length does not always include the terminating zero.** Across the
 shipped data 23,729 names end with a zero byte and 414 do not. Read all
@@ -178,11 +185,17 @@ That is the same chunk container: all 1321 shipped files parse with the same
 code without a single error, and inside are the same familiar ids in the same
 roles — mesh, positions, UVs, indices, bones, bounds, collision.
 
-The difference is that a `.pfb` is **an assembly, not one model**: a file
-carries between two and 119 roots, each with its own mesh, skeleton and bounds —
-that is, several placed instances in a single file. Exactly two roots is the
-common case, 686 files out of 1321; a file with a single root does not occur at
-all.
+The difference is that a `.pfb` is **an assembly, not one model** — and its
+models have to be counted with care, because there are two kinds of `id = 0`
+chunk in the file. The outer one, exactly one per file, is a wrapper: its
+children are always `(1000, 13, 300)` or `(1000, 13, 200, 300)`, and in none of
+the 1321 files is a mesh among them. The placed instances are the **nested**
+`0` chunks, and all 8071 of those do hold a mesh, each with its own skeleton and
+bounds.
+
+A file holds **between 1 and 118 nested models**; exactly one in 686 files out
+of 1321 — so for half the shipped data an "assembly" consists of a single
+model.
 
 It also has chunks that appear in neither `.bh3` nor `.bha`: `112`, `200`…`203`
 and `300`…`306`. Their layout has not been worked out — neither the field count
@@ -224,9 +237,10 @@ always below the UV count. 464 models out of 783 carry these chunks; in the
 rest the binding is rigid and the two spaces coincide.
 
 **A single vertex can be pulled by as many as eleven bones** — the record in the
-shipped data belongs to `sawu_lod0`. That runs straight into a glTF limit, where
-one set holds four influences: a conversion takes the four heaviest bones and
-renormalises the rest away, and the remaining bindings are gone. Gone silently —
+shipped data is shared by four models, `sawu_lod0` through `sawu_lod3`. That
+runs straight into a glTF limit, where one set holds four influences: a
+conversion takes the four heaviest bones and renormalises the rest away, and the
+remaining bindings are gone. Gone silently —
 neither the format nor the exporter says a word about it.
 
 **Reading 51 as "the index of a partner vertex" is a mistake**, and a hard one
@@ -270,11 +284,25 @@ editor: **if the average distance from a vertex to the origin of its bone has
 grown several times over, the edit is wrong.** It is a cheap check, and it
 catches the mistake before it reaches the archive.
 
-**Vertex order is part of the skeleton.** A bone owns a contiguous slice of the
-array rather than a list of indices, so after a topology change the vertices
-have to be re-sorted by bone and the triangle indices rewritten through the
-resulting permutation. Skip that step and the bone ranges point at somebody
-else's geometry: the file parses, and the model drifts.
+**Record order is part of the skeleton.** A bone owns a contiguous slice of the
+**skinning record** array rather than a list of indices, so after a topology
+change the records have to be re-sorted by bone, permuting every array that goes
+per record along with them: 2, 3, 8, and also 50 and 51. Skip that step and the
+bone ranges point at somebody else's geometry: the file parses, and the model
+drifts.
+
+The triangles, though, do not always have to be touched, and this is where
+telling the two spaces apart pays off:
+
+- in the 464 models carrying chunks 50/51 the indices address draw vertices,
+  which have not moved — **chunk 5 stays exactly as it was**. The records are
+  reordered, while the vertex numbers written inside chunk 51 keep their values;
+- in the 319 models with rigid binding there is no chunk 51, a record and a draw
+  vertex are the same thing, and there the triangle indices do have to be
+  rewritten through the permutation.
+
+Applying the second rule to the first 464 models is precisely the two-spaces
+mistake described above: the mesh falls apart while the file still parses.
 
 A related limit: **the set of bones cannot be changed.** Chunk 111 describes
 the joints of specific bones and 113/114 the collision built for them; an added
@@ -366,7 +394,7 @@ outside, in three steps:
 | 2 | `data\unit_materials.xml` | `<MATERIAL material_name="....fx">` with `<TEXTURE role="diffusemap / normalmap / teamcolormap"/>` |
 | 3 | `art\units\...` | the file itself: named `.tga`, DDS inside |
 
-### Four traps in that chain
+### Five traps in that chain
 
 **Names do not work.** The obvious rule "the texture is named after the model"
 fails for roughly half the pairs. The diffuse map of `clockworkman_lod_3.bh3`
@@ -487,8 +515,10 @@ there are no practical consequences.
 
 **Ordinary models contain degenerate triangles, and glTF will not take them.**
 glTF builders refuse a triangle with two corners in the same point, and the
-shipped data is full of them: 155 models out of 783 carry at least one, 1155 in
-total — 26 out of 454 in `boar`, 76 out of 2800 in `spiritminer_lod3`. Their
+shipped data is full of them: 155 models out of 783 carry at least one amid
+otherwise ordinary geometry, 1134 in total — 26 out of 454 in `boar`, 76 out of
+2800 in `spiritminer_lod3`. (Another 21 triangles belong to the fourteen models
+that are degenerate throughout, covered just below.) Their
 area is zero and they were never on screen, so losing them is harmless — but the
 loss has to be reported rather than silent.
 
@@ -572,13 +602,13 @@ An honest list, with the reason rather than a "not yet".
 
 ## What remains unknown
 
-- **Chunk 8** — one vector per skinning record: unit length for 98 % of the
-  vectors in the shipped data and zero length for the other two per cent,
-  depending on both the geometry and the UV layout. It turned out to be neither
-  a tangent, nor a binormal, nor a normal in model space, nor the direction
-  from bone to vertex — all four hypotheses were rejected by measurement. The
-  game accepts and renders a model without it exactly as before, but that is
-  the only thing known about it for certain.
+- **Chunk 8** — one vector per skinning record, depending on both the geometry
+  and the UV layout. Of the 1,081,408 vectors in the shipped data, 1,060,129 are
+  unit length, 20,948 are zero, 322 are neither, and nine are `NaN`. It turned
+  out to be neither a tangent, nor a binormal, nor a normal in model space, nor
+  the direction from bone to vertex: all four hypotheses were rejected by
+  measurement. The game accepts and renders a model without it exactly as
+  before, but that is the only thing known about it for certain.
 - Chunk 90, and the extra eight bytes on some bones.
 - The meaning of the flag values: bones (0…3), models, animation keys.
 - Why there are three bounds slots (14/15/16) and how they differ.
