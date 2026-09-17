@@ -126,8 +126,9 @@ The measurable difference:
 | `XP` set | 88 | 64 |
 
 A hero's ability is typically **researched for resources and grows through
-tiers** — `Glass Shards` (75w) → `Glass Daggers` (125w) → `Glass Swords`
-(175w) → `Glass Scimitars`, three links chained by `FROM`. The first tier's
+tiers** — `Glass Shards` (no cost — the starting tier) → `Glass Daggers`
+(75w) → `Glass Swords` (125w) → `Glass Scimitars` (175w), three links chained
+by `FROM`. The first tier's
 `TYPENAME` in the data is the same string as the whole chain's usual label
 (`Glass Scimitars`) — cross-reference by `TYPENAME` instead of `NAME` and it's
 easy to mistake this chain for a ring, which it isn't. An ordinary unit's
