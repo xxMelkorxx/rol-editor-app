@@ -35,13 +35,14 @@ about the Pirates, the Mianans, or any other campaign sub-nation — for those,
 the mask is a flat `0000`, and access is granted entirely by the second
 layer.
 
-The key of a record is `TYPENAME`, not `NAME`: names are not unique even
-inside one file. Among the 335 units, `NAME` repeats 53 times — three
-completely different units, with `TYPENAME` values `Priest`, `Worker` and
-`Miner`, all display the same in-game name "Miner". `TYPENAME` is the only
-way to tell them apart; the full listings live in the reference tables:
-[units](reference/units.en.md), [buildings](reference/buildings.en.md),
-[techs](reference/techs.en.md), [crafts](reference/crafts.en.md).
+The key of a record here is `TYPENAME`, not `NAME`; the fact itself, along
+with the example of three identically-named units, is covered in
+[game-data.en.md](game-data.en.md). What matters for this document: `NAME`
+being non-unique is a property of layer 1 specifically, not something that
+appears separately at the faction-set or map level. Among the 335 units,
+`NAME` repeats 53 times; in Russian, the three "Miner" units from that
+example are just as indistinguishable by ear — that is not a translation
+slip, it is the same layer-1 property showing up in another language.
 
 **A trap built into the layer.** The files are not structured alike. `<UNIT>`
 and `<CRAFT>` sit right at the root of their files, while `techrules.xml`
@@ -131,10 +132,14 @@ into a skirmish battle — the recipe and its seven pitfalls are in
 
 **Through layers 2 and 3 together.** Leave the entity inside its faction's
 rule set as is, and wire that set into the map you want from the game's own
-scenario editor: `Map Properties → Game Settings → Manage Nations`, then
-`Playable`. This only works on the map where it was wired in, but it never
-touches the base rule files at all. This is how the existing new-nation mods
-are built — covered in [mods.en.md](mods.en.md).
+scenario editor: the switch lives in the map's properties, under the game
+settings section, among the nation-management controls. The exact menu path
+(`Map Properties → Game Settings → Manage Nations`, a `Playable` flag) comes
+from a third-party modding guide, not from running the editor ourselves —
+the labels in your copy of the game may differ, but the section is the same
+one. This only works on the map where it was wired in, but it never touches
+the base rule files at all. This is how the existing new-nation mods are
+built — covered in [mods.en.md](mods.en.md).
 
 ## Where things physically live
 
@@ -147,7 +152,8 @@ more map lives in `mapfiles\`.
 
 AI scripts live separately, in the `scripts.big` archive, and follow a rule
 of their own: as long as that archive is present, the engine reads scripts
-only from it and simply ignores any edits made in the like-named folder on
-disk. Authors of AI mods have to delete `scripts.big` entirely for their own
-scripts to take effect at all — otherwise the two layers share a name, and
-the archive wins.
+only from it and simply ignores any edits made in the `rules\` folder on disk
+(the scripts sit inside it, at paths like `rules\scripts\prodai_lib.bhs`).
+Authors of AI mods have to delete `scripts.big` entirely for their own
+scripts to take effect at all — otherwise the archive and the folder on disk
+carry the same content, and the archive wins.
