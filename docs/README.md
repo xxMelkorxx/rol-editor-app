@@ -1,6 +1,6 @@
-English: [README.en.md](README.en.md)
-
 # База знаний о правилах Rise of Legends
+
+English: [README.en.md](README.en.md)
 
 Всё, что здесь собрано, читается прямо из архивов установленной игры: файлы
 правил, строковые таблицы, исполняемый файл `legends.exe`. Никаких догадок —

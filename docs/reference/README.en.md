@@ -1,6 +1,6 @@
-Russian: [README.md](README.md)
-
 # Reference tables
+
+Russian: [README.md](README.md)
 
 Lists of everything the game treats as an entity, plus dictionaries of its
 parameters. Deliberately no stats here: this is an index of "what exists and

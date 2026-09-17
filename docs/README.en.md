@@ -1,6 +1,6 @@
-Russian: [README.md](README.md)
-
 # Knowledge base on Rise of Legends rules
+
+Russian: [README.md](README.md)
 
 Everything gathered here is read straight from the installed game's own
 archives: rule files, string tables, the `legends.exe` executable. No
