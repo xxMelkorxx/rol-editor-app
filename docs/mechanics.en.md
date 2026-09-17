@@ -18,52 +18,62 @@ files contain, what is actually a lever.
 
 ## Verify by measurement, not by reading
 
-The rule files are heavily commented, and the comments are usually reliable —
-but not always. While sorting technologies and crafts into groups, checking
-against the game's real behavior turned up a mismatch with a developer's
-comment next to a field three separate times, and each time the measured
-behavior turned out right, not the comment's text. Further down are a couple
-of such cases: a price that never changes in the file yet climbs in the game,
-and a field that looks like the right one but means something else entirely.
-The only reliable way to test a theory about a mechanic is to reproduce it in
-the game, not to re-read the comment one more time.
+[game-data.en.md](game-data.en.md) already establishes the headline fact:
+developer comments inside the rule files diverged from what the game actually
+does three separate times, and each time the data turned out right, not the
+comment's text. This document needs the same caution in two more places that
+work differently. First, a field's own value can diverge from what the game
+shows — not just its written description: further down is a price that never
+changes in the file yet climbs with every purchase. Second, a plausible-looking
+theory about what a field means can simply be wrong, with no comment
+disagreement involved at all — that's how one candidate for "the player
+presses this ability" gets rejected below. The only way to tell a working
+theory about a mechanic from a misleading one is to reproduce it in the game,
+not to re-read the text next to the field one more time.
 
-## Technologies: 145 records in one file, not 141
+## Technologies: 141 records, plus 322 more next to them
 
 `data\techrules.xml` is not one list but two containers under a shared root:
-`<TECHS>` (141 `<TECH>` records) and, separately, `<BONUSES>` (4 `<BONUS>`
-records). Any pass over the file that only walks blocks inside `<TECHS>`
-misses those four entirely — they're just as real, only living in a different
-container with a different field set.
+`<TECHS>` (141 `<TECH>` records) and, separately, `<BONUSES>`. That second
+container is not a small add-on — it holds **322** `<BONUS>` records, each
+with its `DATA0` field filled in. A pass over the file that only walks blocks
+inside `<TECHS>` doesn't miss a handful of records, it misses more than two
+thirds of the total — Vinci bonus grants, hero-tied bonuses, borders, taxes,
+healing, production. Both numbers, 141 and 322, are also given in
+[rule-layers.en.md](rule-layers.en.md).
 
-By the `WHERE` field, the 141 technologies split without remainder into four
-groups:
+By the `WHERE` field, the 141 technologies in `<TECHS>` split without
+remainder into three groups:
 
 | Group | What marks it | Records |
 |---|---|---|
 | Leader research | `WHERE = leader` | 56 |
 | Building-tied technology | `WHERE` = a building's name | 60 |
 | City and unattached | `WHERE = none`/empty | 25 |
-| — | (total `<TECH>`) | **141** |
-| Condition-style bonuses | `<BONUS>` inside `<BONUSES>` | 4 |
+| **Total `<TECH>`** | | **141** |
 
-56 + 60 + 25 + 4 = 145 — exactly what the file holds. The full list with
-nation and how each is obtained is in
-[reference/techs.en.md](reference/techs.en.md).
+56 + 60 + 25 = 141, with nothing left over. Next to it sits a separate block
+of 322 `<BONUS>` records, with their own field set — they don't show up in
+[reference/techs.en.md](reference/techs.en.md) (that table is built from
+`<TECHS>` only). The full list of technologies with nation and how each is
+obtained is in that same reference.
 
 **One mechanic hides across two of those groups at once.** Vinci's "prototype
-factory" (a building the data itself names `Prototype Factory`, not the label
-you see on the building list) accounts for 31 records: seven service records
-(`Trade Mission Tech Level 1..7`, cost 0), plus three rings of seven
-alternatives each (`EXCLUSIVE` wires a ring so taking one alternative locks
-out its two neighbors), plus three top-tier records. Of those 31, 28 have a
-`WHERE` pointing at a building (already counted under "building-tied"), and
-the three top-tier ones have `WHERE = None` (already counted under "city and
-unattached"). So `WHERE` alone does not carve this mechanic out — what ties it
-together is only the naming pattern (`Trade Mission Tech Level N`) and the
-`PREQ0`/`PREQ1` chain, not one field's shared value. The same trap waits for
-anyone trying to isolate a mechanic with a single column filter: check first
-whether `WHERE` has cut it in half.
+factory" is a building whose internal name is `Trade Mission` — the player
+sees it labeled `Prototype Factory` — and its technologies share that same
+internal name: `Trade Mission Tech Level N`. The mechanic itself is 31
+`<TECH>` records: seven service records (`Trade Mission Tech Level 1..7`, cost
+0, `WHERE = none`), plus **seven rings of three alternatives each**
+(`EXCLUSIVE` wires the three records of one tier into a cycle — taking one
+locks out the next one around the ring, not "both neighbors at once"), for
+7 × 3 = 21 records with `WHERE = Trade Mission`, plus three top-tier records
+with `WHERE = None`. Of those 31: the 21 are already counted under
+"building-tied," and the 7 + 3 = 10 under "city and unattached." So `WHERE`
+alone does not carve this mechanic out — what ties it together is only the
+naming pattern (`Trade Mission Tech Level N`) and the `PREQ0`/`PREQ1` chain,
+not one field's shared value. The same trap waits for anyone trying to
+isolate a mechanic with a single column filter: check first whether `WHERE`
+has cut it in half.
 
 What's clearly safe to change here: all 56 leader-research records follow a
 strict cost ladder, `1r → 2r → 4r → 7r`, with zero exceptions — but that's a
@@ -77,13 +87,17 @@ that. Real building-upgrade chains through `PREQ1` (pairs and triples, e.g.
 `Sandtough` → `Stonetough` → `Rocktough`) are ordinary data too — reordering or
 adding a link works.
 
-What you cannot get by editing these fields: repeat purchases of the top-tier
-prototype (it carries no `EXCLUSIVE`, so it can be bought again and again)
-should cost more each time — yet the `COST` field stays a flat `2v` on every
-repeat. Measuring in the game shows the third purchase really costs 3
-prototypes, while the file still reads `2v`. The price-ramp step is wired into
-the engine and keyed to which record this is, not to any field value —
-changing or removing that ramp by editing `techrules.xml` is not possible.
+What you cannot get by editing `techrules.xml`: repeat purchases of the
+top-tier prototype (it carries no `EXCLUSIVE`, so it can be bought again and
+again) should cost more each time — yet the `COST` field stays a flat `2v` on
+every repeat. Measuring in the game shows the third purchase really costs 3
+prototypes, while the file still reads `2v`. This step even has a name —
+`data\rules.xml` holds named constants `ramp_final_prototypes` and
+`ramp_final_prototypes_for_all`, commented "use ramping for final prototype
+techs?". So the mechanic is described in data after all — just in the one
+file that, as the section below shows, ignores edits entirely, so the
+practical takeaway doesn't change: changing or removing that ramp by editing
+files isn't possible.
 
 ## Crafts: 509 records, split by purpose
 
@@ -112,8 +126,11 @@ The measurable difference:
 | `XP` set | 88 | 64 |
 
 A hero's ability is typically **researched for resources and grows through
-tiers** — `Glass Scimitars` → `Glass Daggers` (75w) → `Glass Swords` (125w) →
-`Glass Scimitars` (175w), three links chained by `FROM`. An ordinary unit's
+tiers** — `Glass Shards` (75w) → `Glass Daggers` (125w) → `Glass Swords`
+(175w) → `Glass Scimitars`, three links chained by `FROM`. The first tier's
+`TYPENAME` in the data is the same string as the whole chain's usual label
+(`Glass Scimitars`) — cross-reference by `TYPENAME` instead of `NAME` and it's
+easy to mistake this chain for a ring, which it isn't. An ordinary unit's
 ability simply exists from birth. Editing a hero's cost, mana, and tiers is a
 working lever; on an ordinary unit those fields are blank for a reason, not by
 accident.
@@ -173,27 +190,44 @@ Confirmed either by measurement or by direct edit:
   exactly four units this way, and none of them touch the game's code to do
   it;
 - a district building's national variant — through `GRAFT`, tying the generic
-  version to a nation-specific one.
+  version to a nation-specific one;
+- **the free-unit grant for a prototype is data after all — just not in
+  `techrules.xml`.** `FreeMiner2` ("2 clockwork miners") and its siblings are
+  only a trigger; they don't grant anything by themselves. The grant is
+  carried by a `<BONUS>` record inside the same file's `<BONUSES>`: its
+  `PREQ0` points at the trigger technology, and its `DATA0` names a craft from
+  `craftrules.xml` that actually spawns the units:
+
+  ```xml
+  <BONUS><TYPENAME>Bonus Clockwork Miners 1</TYPENAME>
+    <PREQ0>FreeMiner2</PREQ0>        <!-- trigger technology -->
+    <DATA0>Trade Miners 2</DATA0>    <!-- craft that grants the units -->
+  </BONUS>
+  ```
+
+  `Free Miner 1`, `Free Scout 1`, `Bonus Clockwork Foreman` (which also uses
+  `DATA1`/`DATA2`), `Bonus Juggernauts`, and `Lead into Gold` all work the
+  same way; the crafts `Trade Miners 1..6`, `Trade Foreman 1`, and
+  `Trade Jugger 1` are visible in
+  [reference/crafts.en.md](reference/crafts.en.md). There's even a built-in
+  off switch: `Bonus Clockwork Miners 4` uses the same pattern with
+  `PREQ0 = disable`. Since this runs through `PREQ0`/`DATA0`, wiring the grant
+  to a different technology or a different craft is an ordinary data edit, not
+  an engine change.
 
 ## What's hardwired — don't spend time here
 
 Confirmed the same way, by measurement rather than by guessing:
 
-- **Edits to `data\rules.xml` don't do anything.** This is the most deceptive
-  file of all: 836 named constants, each with its own comment, looking like
-  the main dial for economy and combat. Six experiments in a row (both forms
-  of the file, both archives, including filling every slot of one parameter at
-  once) produced no visible change in the game. Why is covered in
-  [rule-layers.en.md](rule-layers.en.md); treat these 836 parameters as a
-  description of how the game works, not as a list of levers.
+- **Edits to `data\rules.xml` don't do anything** — [rule-layers.en.md](rule-layers.en.md)
+  covers why (836 constants, six experiments, no visible change in any of
+  them); here it's enough to remember the conclusion and not go looking for
+  levers in that file.
 - **The price-ramp step on repeat purchases** of Vinci's top-tier prototypes —
   the `COST` field never changes, yet the real price climbs by 1 prototype
-  each purchase.
-- **Free-unit grants for a prototype** (`FreeMiner2` = "get 2 miners",
-  `FreeJuggernauts` and the like) — these records have an empty `CODETAG`, and
-  no field at all carries a count or list of granted units. The only thing the
-  engine can be keying off is the record's own name (`TYPENAME`), meaning the
-  effect is wired by name, not by a field's value.
+  each purchase; the step itself is even named in `rules.xml`
+  (`ramp_final_prototypes`), but that's the same file as above — you can read
+  the constant, you just can't change what it does.
 - **The district-into-city transformation itself.** The rules describe only
   the building tiers (`SmallCity` → `City` → `Large City` → `Great City`,
   chained by `FROM`) and the technology markers the city grants itself
@@ -210,8 +244,11 @@ Confirmed the same way, by measurement rather than by guessing:
 
 The 183 independent, unclaimed crafts mix at least four different purposes
 (dominance conditions, hit effects, states, service graphics), and no single
-field has been found that would sort them by purpose. It's also unresolved
-where the four `<BONUS>` records belong conceptually — a mechanic of their
-own, or part of something broader. The groups above make no claim to
-completeness: they're what measurement has managed to pull apart so far, not
-a final registry of every mechanic in the game.
+field has been found that would sort them by purpose. It's also unresolved how
+to approach all 322 `<BONUS>` records as a whole: sorting through them has
+already turned up dominance conditions, prototype unit grants, borders, taxes,
+healing, and production — several different mechanics sharing one container,
+not one mechanic, and a class-by-class breakdown of them is still to come. The
+groups above make no claim to completeness: they're what measurement has
+managed to pull apart so far, not a final registry of every mechanic in the
+game.
