@@ -100,7 +100,9 @@ editing an ordinary field spreads across every level of that form at once.
   but have no section of their own yet;
 - weapon properties (magic damage, stun and the rest) are shown but cannot be
   edited one by one;
-- numeric fields have text boxes, no sliders.
+- numeric fields have text boxes, no sliders;
+- switching the theme is only partial: some labels stay dim until the editor
+  restarts — the settings page says so itself.
 
 What changed from version to version is in the [changelog](CHANGELOG.en.md).
 
