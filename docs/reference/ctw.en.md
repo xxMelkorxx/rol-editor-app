@@ -1,5 +1,7 @@
 # Campaign entities (CTW)
 
+Russian: [ctw.md](ctw.md)
+
 > Built from the game's own data: the rule files and string tables inside the installed archives. The numbers in section headings are record counts.
 
 Entities absent from the base game: blocks with `reference_style="new"` (described in full) and `reference_style="copy"` (a clone of another record under its own `TYPENAME`) from `data\tribes\ctw\*.xml`. Records: 646. Untranslated: 87.

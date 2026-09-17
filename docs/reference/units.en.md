@@ -1,5 +1,7 @@
 # Units of the base game
 
+Russian: [units.md](units.md)
+
 > Built from the game's own data: the rule files and string tables inside the installed archives. The numbers in section headings are record counts.
 
 All `<UNIT>` blocks from `data\unitrules.xml` — everything that takes part in its own battles. Records: 335. Untranslated: 0.

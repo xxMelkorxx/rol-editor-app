@@ -1,5 +1,7 @@
 # Rule tags: the shared vocabulary
 
+Russian: [rule-tags.md](rule-tags.md)
+
 157 distinct tags across 34 rules files. The main observation:
 the set of tags is **not a property of the file, but a shared vocabulary**.
 Each file uses its own subset, and a tag missing from one file can still be

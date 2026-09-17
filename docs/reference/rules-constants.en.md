@@ -1,5 +1,7 @@
 # Global rules: `rules.xml`
 
+Russian: [rules-constants.md](rules-constants.md)
+
 836 parameters in 61 sections — numbers the engine looks up by name: economy, combat, healing, borders, victory, hero and faction bonuses. Each entry has been checked against whether its name occurs among the strings of the game's executable: parameter names are compiled into the code, and a missing name means nothing ever reads that entry.
 
 ## How an entry is built

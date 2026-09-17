@@ -1,5 +1,7 @@
 # Buildings of the base game
 
+Russian: [buildings.md](buildings.md)
+
 > Built from the game's own data: the rule files and string tables inside the installed archives. The numbers in section headings are record counts.
 
 All `<BUILDING>` blocks from `data\buildingrules.xml`. Records: 142. Untranslated: 0.

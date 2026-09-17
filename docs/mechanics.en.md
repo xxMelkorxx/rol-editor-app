@@ -1,6 +1,6 @@
 # What's driven by data, and what's hardwired into the engine
 
-Русский: [mechanics.md](mechanics.md)
+Russian: [mechanics.md](mechanics.md)
 
 Before you rewrite a unit's stat or a technology's cost, it helps to know what
 a data edit can actually change. Part of the game's mechanics is fully

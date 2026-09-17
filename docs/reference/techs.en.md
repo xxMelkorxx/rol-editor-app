@@ -1,5 +1,7 @@
 # Technologies of the base game
 
+Russian: [techs.md](techs.md)
+
 > Built from the game's own data: the rule files and string tables inside the installed archives. The numbers in section headings are record counts.
 
 All `<TECH>` blocks from `data\techrules.xml`. Records: 141. Untranslated: 0.

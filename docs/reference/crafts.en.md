@@ -1,5 +1,7 @@
 # Crafts of the base game
 
+Russian: [crafts.md](crafts.md)
+
 > Built from the game's own data: the rule files and string tables inside the installed archives. The numbers in section headings are record counts.
 
 All `<CRAFT>` blocks from `data\craftrules.xml` — abilities, spells and orders. Records: 509. Untranslated: 1.
