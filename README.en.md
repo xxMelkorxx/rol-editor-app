@@ -102,6 +102,8 @@ editing an ordinary field spreads across every level of that form at once.
   edited one by one;
 - numeric fields have text boxes, no sliders.
 
+What changed from version to version is in the [changelog](CHANGELOG.en.md).
+
 ## The knowledge base
 
 The other half of this repository is not the program but a
