@@ -286,7 +286,7 @@ catches the mistake before it reaches the archive.
 
 **Record order is part of the skeleton.** A bone owns a contiguous slice of the
 **skinning record** array rather than a list of indices, so after a topology
-change the records have to be re-sorted by bone, permuting every array that goes
+change the records have to be re-sorted by bone, permuting the arrays that go
 per record along with them: 2, 3, 8, and also 50 and 51. Skip that step and the
 bone ranges point at somebody else's geometry: the file parses, and the model
 drifts.
@@ -534,10 +534,12 @@ Do not: in the original file the coordinates match bit for bit, but after a
 trip through matrices they diverge in the low bits. The threshold has to be
 geometric — a fraction of the model's size.
 
-**Vertex colours live in two different spaces.** Of the 64 files carrying chunk
-110, in some the length equals the skinning record count and in others the draw
-vertex count. Chunks 3 and 8 know no such split: they always go by skinning
-records.
+**Vertex colours go by draw vertices.** Chunk 110 occurs in 64 files, and in 42
+of them the question cannot be settled: there the skinning records and the draw
+vertices are equal in number, so the length matches both. In the remaining 22,
+where the two spaces are distinguishable, the length of chunk 110 equals the
+draw vertex count — and never the record count. Chunks 3 and 8 raise no such
+question: they always go by skinning records.
 
 ## What to open all this with
 
