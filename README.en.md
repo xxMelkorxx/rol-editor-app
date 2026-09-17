@@ -47,7 +47,9 @@ back exactly where it started.
 The sections are on the left: Units, Heroes, Buildings, Research, with
 Changes and Settings at the bottom. Inside a section the list is on the left
 and the card of the selected entry on the right; above the list is a search
-box that matches the display name or the internal name (`TYPENAME`).
+box that matches the display name or the internal name (`TYPENAME`). Units,
+heroes and buildings are all edited field by field, on equal footing; Research
+edits the leader's development branches the same way.
 
 Four buttons across the top:
 
@@ -82,8 +84,10 @@ editing an ordinary field spreads across every level of that form at once.
 
 0.0.1 is the first release, and it is fairer to say so up front:
 
-- buildings, technologies and crafts open for reading only — their cards
-  cannot be edited yet;
+- technologies and crafts cannot be opened in the interface at all. Research
+  covers the leader's development branches only: 14 branches, 56 records. The
+  other 85 technologies and all 509 crafts are there in the game's rule files,
+  but have no section of their own yet;
 - weapon properties (magic damage, stun and the rest) are shown but cannot be
   edited one by one;
 - numeric fields have text boxes, no sliders.
