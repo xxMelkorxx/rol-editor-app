@@ -36,23 +36,28 @@ sits inside the archives.
 
 The expansion mod's `ReadMe.txt` ends with the signature "Otter": a
 first-person letter, install instructions, the "Rise of Legends Heaven" forum
-named outright, and a name at the very end. The same name signs the author's
-own `Modding Guide\Modding Heroes.txt` inside the campaign-heroes mod — a
-separate write-up that, by its own words, was written "by request for a user
-on ROL Heaven". Two independent files in two different archives, carrying the
-same signature — that is enough to name the author outright: **Otter**.
+named outright, and a name at the very end. The same name signs
+`Modding Guide\Modding Heroes.txt` inside the campaign-heroes mod — a separate
+write-up entirely devoted to enabling the hero Battaglion, ending with the
+same name on its own last line. The request that prompted it is named not in
+that file itself but in the neighboring `Modding Guide\ReadMe.txt` in the same
+folder: "This is a modding guide I wrote by request for a user on ROL
+Heaven" — that file's only line, carrying no signature of its own. Two
+independent files in two different archives, carrying the same signature —
+that is enough to name the author outright: **Otter**.
 
 The remaining two archives, `New_Nations_Mod_-_version_4` and the large
 bundle `rise_of_legends_motters_new_nations_mod`, carry no signature at all.
-But the "HOW TO ENABLE NATIONS" section of their `Read Me.txt` files matches
-word for word between the two, down to the scenario editor's button names;
-both are written in the first person ("thanks for trying out my new mod"),
-both mention not having written a full AI for the sub-nations, and both point
-to "Rise of Legends Heaven". That is a match in method and voice, not a
-signature — not quite enough to state authorship as fact, but nothing in the
-text contradicts it either. For these two archives, authorship is not
-directly signed here, only described as apparently the same author, going by
-the text.
+But the eight numbered steps of the "HOW TO ENABLE NATIONS" section in their
+`Read Me.txt` files match word for word between the two, down to the scenario
+editor's button names — the large bundle only adds its own intro line and a
+separate sub-nations paragraph on top; both are written in the first person
+("thanks for trying out my new mod"), both mention not having written a full
+AI for the sub-nations, and both point to "Rise of Legends Heaven". That is a
+match in method and voice, not a signature — not quite enough to state
+authorship as fact, but nothing in the text contradicts it either. For these
+two archives, authorship is not directly signed here, only described as
+apparently the same author, going by the text.
 
 The place of publication all four mods name for themselves is the "Rise of
 Legends Heaven" forum. None of the files inside the archives carry its
@@ -86,22 +91,26 @@ carrying a hero across, and what is worth borrowing from the author's own
 choices, live in [campaign-to-skirmish.en.md](campaign-to-skirmish.en.md).
 
 **Expansion v2** is the smallest of the four by record count (12 units, 2
-buildings, 11 abilities, 7 bonuses) and the only one that touches more than
-the rule files. Among the additions: a five-level `Ix, the Moon God` for the
-Cuotl, a five-level `Petruzzo, Lord of Miana` for the Vinci, the
-`Clockwork Scrap Yard` and `Imperial Observatory` buildings, and the
-`Laser Tank` and `Tank Proto` technologies. The tooltip text file grows too:
-1,748 `ENTRY` records against 1,710 in the original. This mod ships two
-builds, "Original" and "Balanced" — they diverge across all four rule files,
-and the balanced one prints roughly a third fewer lines to disk than the
-plain one.
+buildings, 11 abilities, 7 bonuses) and the only one that touches individual
+campaign-map scenarios, not just the shared rule pool and the shared AI
+script library (more on that in the differences section below). Among the
+additions: a five-level `Ix, the Moon God` for the Cuotl, a five-level
+`Petruzzo, Lord of Miana` for the Vinci, the `Clockwork Scrap Yard` and
+`Imperial Observatory` buildings, and the `Laser Tank` and `Tank Proto`
+technologies. The tooltip text file grows too: 1,748 `ENTRY` records against
+1,710 in the original. This mod ships two builds, "Original" and "Balanced" —
+they diverge across all four rule files, though not by much in bulk: the five
+`Data\` files of the balanced build add up to 71,237 lines of text against
+73,071 for the plain one, a difference of about 2.5%.
 
 **Nations v4** turns campaign sub-nations into playable ones, adding 130 new
 units, among them `Acerbus, the Mystic`, `Marwan, the Dark Alim`,
-`Desert Mystic`, `Doge Guard`. It also drops exactly thirteen
-`Summon Army Part *` ability records compared with the original game files —
-a clean removal, not a rename: the army-summoning ability is rebuilt from
-scratch in this mod, and the old parts have no further use.
+`Desert Mystic`, `Doge Guard`. It also drops exactly thirteen `Summon Army *`
+ability records compared with the original game files: `Summon Army 2`, `3`
+and `4` outright, plus ten `Summon Army Part 0`–`4` pieces (including the
+lettered `1a`, `2a`, `2b`, `3a`, `3b`) — a clean removal, not a rename: the
+army-summoning ability is rebuilt from scratch in this mod, and the old parts
+have no further use.
 
 **The large nations bundle** does the same thing with a different set of
 additions (a five-level `Dark Genie`, `Kakoolha, King of the Cuotl`,
@@ -131,37 +140,54 @@ That is the exact same route
 single hero across by hand — this mod just does it for every hero at once.
 
 **Expansion** also writes new records into layer one, but unlike the other
-three, it additionally edits 19 `.bhs` files: not only campaign map scenario
-scripts (`campaigns\<nation>\Maps\*.bhs`), but the shared script library
-itself — `rules\scripts\vinci.bhs`, `cuotl.bhs`, `alim.bhs`, and their
-`*_spellai.bhs` ability-AI counterparts. This is the only one of the four
-mods that changes how the computer opponent behaves, not just what entities
-exist — and so the only one for which deleting `scripts.big` doesn't merely
-unlock the edits, it actually delivers new AI behavior rather than just
-letting the game read `rules\` off disk (what that archive is and why it
-overrides `rules\` on disk is covered in
-[rule-layers.en.md](rule-layers.en.md)).
+three, among its 19 `.bhs` files are scripts for individual campaign
+missions — `campaigns\<nation>\Maps\*.bhs`. None of the other three archives
+carries a file like that: expansion alone touches the logic of a specific
+campaign map, not just the shared rule pool and the shared script library.
 
-**Both nations mods** take a different route entirely — through layer two and
-three at once: the nation itself already exists in the `data\tribes\ctw\`
-sets, and the mod never touches the shared pool, it just wires the right set
-into a map's `<TRIBES>` block — exactly the route
-[rule-layers.en.md](rule-layers.en.md) calls the "other" way to hand an
-entity to the player. What separates the two nations mods isn't the method,
-it's how much of the legwork is already done: v4 leaves the scenario-editor
-step to the player for every map they want it on, while the large bundle
-ships five maps where that step is already done, plus a separate set of
-rewritten faction files for the sub-nations that aren't on any of those five.
+The shared AI script library (`rules\scripts\vinci.bhs`, `cuotl.bhs`,
+`alim.bhs`, and their `*_spellai.bhs` ability-AI counterparts) is actually
+carried by all four archives, and in every one of them those files differ
+from the original — unsurprising, since a mod that adds new units, buildings
+and abilities needs the very files that decide who gets hired and what gets
+researched to know those new records exist. That is not something a file
+listing alone can tell apart; it takes a byte-for-byte comparison against the
+original, and by that comparison all four differ. So the install
+instructions' requirement to delete `scripts.big` applies equally to all
+four, not just to expansion (what that archive is and why it overrides
+`rules\` on disk is covered in [rule-layers.en.md](rule-layers.en.md)).
+
+**Both nations mods** also write new records into layer one — some of the
+added units carry a mainline nation's `TRIBE_MASK` outright and are available
+immediately, the same way the heroes mod's additions are. But the actual
+point of these mods — sub-nations like the Pirates or the Mianans — works
+differently: `Acerbus, the Mystic`, `Marwan, the Dark Alim`, `Desert Mystic`
+and `Doge Guard` all carry `TRIBE_MASK` `0000` in the mod's own files, the
+same "belongs to no one" value a campaign hero starts with before being
+carried across. What grants access to them isn't a mask, it's the `own` list
+inside a faction file (`data\tribes\ctw\...`) plus wiring that set into a
+map's `<TRIBES>` block — layer two and three at once, exactly the "other"
+route [rule-layers.en.md](rule-layers.en.md) describes for handing an entity
+to the player. What separates the two nations mods isn't the method, it's how
+much of the legwork is already done: v4 leaves the scenario-editor step to
+the player for every map they want it on, while the large bundle ships five
+maps where that step is already done, plus a separate set of rewritten
+faction files for the sub-nations that aren't on any of those five.
 
 All four share one thing done four different ways: an optional extra, bolted
 on rather than baked in. The heroes mod packages its `Extras` folder: an AI
 change to let it hire more than two heroes at once (with the author's own
 warning about the performance hit), plus a `Fallen Refuge` for the Cuotl and
-a `Clockwork Scrapyard` for the Vinci, each switched on separately. The large
-nations bundle applies the same idea to a single hero: `Acerbus, the Mystic`
-sits outside the main package, reachable only by opening the rule file by
-hand and flipping one digit in `TRIBE_MASK` — the author's own choice not to
-make casually available something they judged too strong.
+a `Clockwork Scrapyard` for the Vinci, each switched on separately. Nations
+v4 itself solves the one-hero-too-strong problem differently: `Acerbus, the
+Mystic` sits right in the main package with `TRIBE_MASK` `0000`, and that
+mod's own `Read Me.txt` tells the player to open `unitrules.xml` in Notepad
+and flip the last digit of the mask by hand. The large nations bundle solves
+the same problem a third way: Acerbus isn't in its main package at all, he
+ships as a separate `Bonus\Acerbus` folder that has to be copied in as an
+extra step if wanted — and his mask is still `0000` even inside that separate
+folder, so exactly how copying those files alone is meant to enable him,
+without the same manual mask edit, isn't something the readme actually says.
 
 ## How these mods install, and why this project does it differently
 
