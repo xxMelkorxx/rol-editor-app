@@ -84,7 +84,7 @@ nobody knows.
 | 110 | vertex colours | array, stride 4 (RGBA) | 64 |
 | 6 | skeleton node | container | 24,143 |
 | 7 | bone | see below | 23,629 |
-| 111 | bone with a joint description | bone + 44 bytes | 514 |
+| 111 | bone with a joint description | bone + 48 bytes (four fewer on 44 bones out of 514) | 514 |
 | 13 | bounds | container | 783 |
 | 14, 15, 16 | three bounds slots | container, often empty | 783 / 783 / 775 |
 | 17 | sphere | 16 bytes: centre (3 `float`) + radius | 978 |
@@ -116,10 +116,15 @@ skeletons at once.
 | 40 + len | `float` | scale, always 1.0 |
 | 44 + len | `int32` | flags, values 0…3 |
 
-Chunk 111 adds 44 bytes of joint description on top of that; the numbers in it
-are recognisably rotation limits (0.5236 = 30°, 0.7854 = 45°). Such bones occur
-in 46 models, PhysX collision in eight, and those eight are a subset of the
-forty-six.
+**Do not treat the tail after the name as a fixed size.** For chunk 7 it is 36
+bytes on 23,595 bones and 44 on the remaining 34; for chunk 111 it is 84 bytes
+on 470 bones and 80 on 44. In other words chunk 111 adds **48 bytes** of joint
+description to an ordinary bone, not 44, and a layout written as "bone plus 44"
+misses by four bytes nine times out of ten. Derive the tail length from the
+chunk's `size` instead of hardcoding a constant. Inside those 48 bytes the
+numbers are recognisably rotation limits (0.5236 = 30°, 0.7854 = 45°). Bones
+with a joint occur in 46 models, PhysX collision in eight, and those eight are a
+subset of the forty-six.
 
 **The name length does not always include the terminating zero.** Across the
 shipped data 23,729 names end with a zero byte and 414 do not. Read all
@@ -127,6 +132,11 @@ shipped data 23,729 names end with a zero byte and 414 do not. Read all
 last letter of those 414, turning `DUMMY01` and `DUMMY02` into the same
 `DUMMY0`. From there, any code that relies on bone names is working with false
 matches.
+
+One qualification right away, so the paragraph above does not suggest more than
+it should: **bone names repeat inside a single skeleton, with nothing wrong
+going on.** In `rally_flag.bh3` fifteen bones are called `dummy`. A name works
+as a cross-check, but the key to a bone is its place in the tree.
 
 The skeleton tree: node `6` holds the bone itself (`7` or `111`) as its first
 child, then one node `6` per child bone.
@@ -169,8 +179,10 @@ code without a single error, and inside are the same familiar ids in the same
 roles — mesh, positions, UVs, indices, bones, bounds, collision.
 
 The difference is that a `.pfb` is **an assembly, not one model**: a file
-carries several roots, up to 119 of them, each with its own mesh, skeleton and
-bounds — that is, several placed instances in a single file.
+carries between two and 119 roots, each with its own mesh, skeleton and bounds —
+that is, several placed instances in a single file. Exactly two roots is the
+common case, 686 files out of 1321; a file with a single root does not occur at
+all.
 
 It also has chunks that appear in neither `.bh3` nor `.bha`: `112`, `200`…`203`
 and `300`…`306`. Their layout has not been worked out — neither the field count
@@ -210,6 +222,12 @@ over every record `i` where `chunk51[i] == r`. The weights per vertex sum to
 one, no draw vertex is left without a record, and the largest triangle index is
 always below the UV count. 464 models out of 783 carry these chunks; in the
 rest the binding is rigid and the two spaces coincide.
+
+**A single vertex can be pulled by as many as eleven bones** — the record in the
+shipped data belongs to `sawu_lod0`. That runs straight into a glTF limit, where
+one set holds four influences: a conversion takes the four heaviest bones and
+renormalises the rest away, and the remaining bindings are gone. Gone silently —
+neither the format nor the exporter says a word about it.
 
 **Reading 51 as "the index of a partner vertex" is a mistake**, and a hard one
 to notice: a read-then-write-back round trip still matches, because the error
@@ -251,6 +269,12 @@ You can check this without launching the game and without even opening an
 editor: **if the average distance from a vertex to the origin of its bone has
 grown several times over, the edit is wrong.** It is a cheap check, and it
 catches the mistake before it reaches the archive.
+
+**Vertex order is part of the skeleton.** A bone owns a contiguous slice of the
+array rather than a list of indices, so after a topology change the vertices
+have to be re-sorted by bone and the triangle indices rewritten through the
+resulting permutation. Skip that step and the bone ranges point at somebody
+else's geometry: the file parses, and the model drifts.
 
 A related limit: **the set of bones cannot be changed.** Chunk 111 describes
 the joints of specific bones and 113/114 the collision built for them; an added
@@ -346,7 +370,7 @@ outside, in three steps:
 
 **Names do not work.** The obvious rule "the texture is named after the model"
 fails for roughly half the pairs. The diffuse map of `clockworkman_lod_3.bh3`
-is `clockwork_diffuse_hi.tga`, while the `clockworkman.tga` sitting right next
+is `clockwork_diffuse_Hi.tga`, while the `clockworkman.tga` sitting right next
 to it belongs to an entirely different material.
 
 **One mesh is worn by several units, and they are dressed differently.**
@@ -365,6 +389,13 @@ a kind.** The values are `units`, `terrain`, `buildings` and `rpg`. That
 matters, because 21 material names are defined in two tables at once —
 `unit_materials.xml` and `materials.xml` — with different textures, and
 `clockworkman.fx` is one of them.
+
+**A material may name a texture that is not in the shipped data.** For 44
+materials out of the 409 in `unit_materials.xml` not one of the named files
+exists — not under `art\`, not anywhere else in the archives. That is a
+property of the data, not a failure of your chain resolution, and the two cases
+have to be told apart: "this model is never mentioned" and "the material named a
+file that does not exist" are different messages and different conclusions.
 
 ### Texture format
 
@@ -446,14 +477,23 @@ from the adjacent triangles — and necessarily **in model space**, because
 neighbouring vertices of a triangle may belong to different bones, and adding
 vectors from different local spaces is meaningless.
 
-**There are non-numeric coordinates in the data.** Five shipped models —
-`kahanwalker_lod_0`, `kahan_peasant_lod_0`, `barbarian_sword`,
-`barbarian_sword2` and `glassgolem_shard_left` — contain `NaN`. In the first
-two a triangle **references** the broken vertex, so this is not junk sitting in
-an unused tail of the array.
+**There are non-numeric coordinates in the data**, and which chunk they sit in
+matters. `kahanwalker_lod_0` and `kahan_peasant_lod_0` have five `NaN` each **in
+the positions** (chunk 2), and a triangle **references** the broken vertex — so
+this is not junk in an unused tail of the array but broken geometry.
+`barbarian_sword`, `barbarian_sword2` and `glassgolem_shard_left` have three
+`NaN` each **in chunk 8**, and that vector is discarded on a rebuild anyway, so
+there are no practical consequences.
 
-**Some models have every triangle degenerate.** These are small effects and
-placeholders (`afreet_upgrade`, `ammo_blank`, `glass_shard`,
+**Ordinary models contain degenerate triangles, and glTF will not take them.**
+glTF builders refuse a triangle with two corners in the same point, and the
+shipped data is full of them: 155 models out of 783 carry at least one, 1155 in
+total — 26 out of 454 in `boar`, 76 out of 2800 in `spiritminer_lod3`. Their
+area is zero and they were never on screen, so losing them is harmless — but the
+loss has to be reported rather than silent.
+
+**And some models have every triangle degenerate** — fourteen of them, small
+effects and placeholders (`afreet_upgrade`, `ammo_blank`, `glass_shard`,
 `fire_circle_mesh` and the like). There is no geometry in them at all; judging
 by the names, whatever is visible is drawn by the effects system, not by a
 mesh.
@@ -511,6 +551,11 @@ An honest list, with the reason rather than a "not yet".
 - **Carry everything a model holds through glTF.** The chunk 8 vector, the
   second binding, vertex colours, PhysX collision and joint descriptions map to
   nothing in glTF: either you copy the chunk payloads across, or you lose them.
+- **Keep a vertex bound to more than four bones.** The game's data goes up to
+  eleven influences per vertex while a glTF weight set holds four: the surplus
+  is dropped on export, and dropped without a sound. Of all the losses on this
+  route that one is the most dangerous — the others at least show up as a
+  missing chunk.
 - **Recompute chunk 8 after a topology change.** Nobody knows what that vector
   is (see below), so there is nothing to compute it from.
 - **Save DDS from Blender.** It cannot write the format; the way back for a
@@ -527,7 +572,8 @@ An honest list, with the reason rather than a "not yet".
 
 ## What remains unknown
 
-- **Chunk 8** — one vector per skinning record, unit length in every case,
+- **Chunk 8** — one vector per skinning record: unit length for 98 % of the
+  vectors in the shipped data and zero length for the other two per cent,
   depending on both the geometry and the UV layout. It turned out to be neither
   a tangent, nor a binormal, nor a normal in model space, nor the direction
   from bone to vertex — all four hypotheses were rejected by measurement. The
