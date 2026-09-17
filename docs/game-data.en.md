@@ -2,16 +2,23 @@
 
 Russian: [game-data.md](game-data.md)
 
-Rise of Legends stores everything it ships in `.big` archives in the `BIGS\`
-folder of the installation: rules, text, models, textures, effects, shaders,
-scripts. 46 archives, 11 591 entries between them. The engine does not read
-loose files sitting next to the archives — you cannot drop a mod in as a
-separate folder; the only thing you can change is what is inside the archives.
+The `.big` archives in the `BIGS\` folder of the installation hold what the
+game is built out of as a system: rules, text, models, textures, effects,
+shaders, scripts. 46 archives, 11 591 entries between them.
+
+But the game is not all inside the archives. Sound (`audio\`, 606 MB), maps
+(`maps\`, 104 MB), video (`videos\`, 126 MB), fonts (`fonts\`, 50 MB) and
+campaigns (`campaigns\`, 48 MB) sit on disk as ordinary files and never enter a
+`.big` — you can change them without repacking anything. Those are the easiest
+edits there are, and a sensible place to start.
+
+Everything else lives inside the archives only: a loose file dropped beside
+them will not be read, and a mod cannot be slipped in as a separate folder.
 
 What follows is a map: which archive is responsible for what, which rule files
 live in it, how the files point at each other, and which format traps catch
 everyone opening this data for the first time. There are five traps, and each
-one costs an evening to the reader who did not know about it.
+one costs an evening if you did not know about it.
 
 ## Archives by role
 
@@ -63,6 +70,17 @@ tables: [units](reference/units.en.md),
 [buildings](reference/buildings.en.md), [techs](reference/techs.en.md),
 [crafts](reference/crafts.en.md).
 
+**The trap on the doorstep: do not confuse these files with the copy in
+`Data\`.** The installation root has a `Data\` folder; in a clean install it
+holds only the `unitrules.xsd` schema and two empty folders, and the rule files
+appear there after you run `ModPack.exe`, the official modder's kit. That copy
+is a template, not what the game reads, and it **differs** from the archived
+one: it is a unit short — 334 `<UNIT>` blocks against 335 in the archive, the
+missing one being `TYPENAME = "High Priest"`. The filenames match letter for
+letter, so the mistake is easy to make, and an edit in `Data\` simply never
+reaches the game. Take your counts from the archive too — that is exactly where
+the 334-versus-335 discrepancy comes from.
+
 The fifth file, `data\rules.xml`, is built differently: not entities, but the
 global numbers the engine asks for by name — 836 parameters in 61 sections
 covering economy, combat, healing, borders, victory conditions, hero and
@@ -70,6 +88,15 @@ faction bonuses. That is where, for instance, the miner price ceiling comes
 from (`unit_worker_ramp_max = 1000` percent over the base price, which is why
 the price tops out at 77 with a base `COST 7m`). Full list:
 [reference/rules-constants.en.md](reference/rules-constants.en.md).
+
+**And straight away, the caveat that saves days.** Edits to `rules.xml` do not
+take effect in the game: six experiments in a row — both forms of the file,
+both archives, including filling all twelve slots of a parameter — produced no
+change on screen at all. The file is read (the game will not start without it),
+but the numbers you see in battle do not come from it. Why that is, is taken
+apart in [rule-layers.en.md](rule-layers.en.md); until then, treat these 836
+parameters as a description of how the game is built rather than levers you can
+pull.
 
 `data\` also holds `itemrules`, `rarerules`, `resourcerules`, `help`,
 `tips_{basic,advanced,alim,cuotl,vinci}`, the `data\tribes\` folder describing
@@ -87,7 +114,7 @@ tag missing from one file is perfectly legal in another
 The `data\` tree is filled by three archives, and their contents overlap:
 
 - `multiplayer_data.big` — 142 files, nearly everything;
-- `data.big` — an engine subset, 42 files;
+- `data.big` — an engine subset: 44 entries in all, 42 of them under `data\`;
 - `mod_data.big` — 81 entries, **the game's modifiable surface**.
 
 ```
@@ -132,7 +159,9 @@ data\tribes\ctw\*.xml      all 29 files — both forms
 Take the first match by name and the form you get is a coin toss. The four main
 rule files (`unitrules`, `buildingrules`, `techrules`, `craftrules`) are safe —
 they exist as text only. But any work on `rules.xml`, the tribes or CTW starts
-with deciding which form the game reads, and being able to write that one.
+with deciding which form the game reads, and being able to write that one —
+subject to the caveat above: for `rules.xml`, edits take effect in neither
+form.
 
 **3. A `.tga` inside an archive is really a DDS.** The packer converted the
 textures on the way in and kept the old name. Open them as DDS; a TGA loader
@@ -140,8 +169,9 @@ trips on the very first byte.
 
 **4. An entry written into an archive must be zlib-compressed.** The format
 lets you put the bytes in raw, and the engine then dies on `unknown compression
-method`. While you are there: an entry has a type field, and it has to hold at
-least an empty string rather than a null.
+method`. While you are there: every entry has a type field, and on write it has
+to be set explicitly — an empty string will do. A tool that leaves it unset
+fails while building the archive, long before the game sees it.
 
 **5. The game reads its archives once, at startup.** Swapping an archive while
 the game is running changes nothing on screen: every check of an edit needs a
@@ -220,6 +250,10 @@ The whole chain is `TYPENAME → ENTRY → *_texture → TEXLOAD → .tga`, with
 | `buildingrules` | 142 | 142 | 134 |
 | `craftrules` | 509 | 508 | 363 |
 | `techrules` | 141 | 155 matches | 140 |
+
+Technologies draw more matches than there are technologies: some of their names
+occur in `uitextable.xml` more than once, so 141 `TYPENAME` values pull 155
+`<ENTRY>` records. 140 end up with an icon.
 
 **The cell geometry is written into the atlas itself.** Cells are separated by
 solid magenta lines (`#FF00FF`, alpha 255) one pixel wide. In every icon atlas
