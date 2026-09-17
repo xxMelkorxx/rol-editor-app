@@ -55,7 +55,10 @@ Changes and Settings at the bottom. Inside a section the list is on the left
 and the card of the selected entry on the right; above the list is a search
 box that matches the display name or the internal name (`TYPENAME`). Units,
 heroes and buildings are all edited field by field, on equal footing; Research
-edits the leader's development branches the same way.
+edits the leader's development branches the same way. A numeric field with a
+narrow range of values gets a slider next to its text box; where the range is
+wide (health, for instance) a scale would show nothing useful, so there is no
+slider.
 
 Four buttons across the top:
 
@@ -100,7 +103,6 @@ editing an ordinary field spreads across every level of that form at once.
   but have no section of their own yet;
 - weapon properties (magic damage, stun and the rest) are shown but cannot be
   edited one by one;
-- numeric fields have text boxes, no sliders;
 - switching the theme is only partial: some labels stay dim until the editor
   restarts — the settings page says so itself.
 

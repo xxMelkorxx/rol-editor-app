@@ -28,5 +28,4 @@ First release.
   other 85 technologies and all 509 crafts are there in the game's rule
   files, but have no section of their own yet.
 - Weapon properties are shown but cannot be edited one by one.
-- Numeric fields have text boxes, no sliders.
 - Some labels only pick up a theme change after a restart.
