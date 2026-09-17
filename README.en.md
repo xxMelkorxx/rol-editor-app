@@ -3,8 +3,9 @@
 Russian: [README.md](README.md)
 
 An editor for the stats of **Rise of Legends**: units, heroes, buildings,
-research. Edits pile up in your own profile and go into the game's archives
-with one button — and the game can be put back the way it was at any moment.
+research. Edits pile up in your profile — a named set of edits, its name shown
+at the top of the window — and go into the game's archives with one button;
+the game can be put back the way it was at any moment.
 
 ![The Units section: on the left a list of 279 entries with icons, on the right the card of the base citizen — names, class and allegiance, nations, flags, cost](docs/images/units.en.png)
 
@@ -17,8 +18,13 @@ Windows and an installed copy of Rise of Legends. Nothing else to install:
 
 [Release v0.0.1](https://github.com/xxMelkorxx/rol-editor-app/releases/tag/v0.0.1)
 — download the archive, unpack it anywhere, run `RolRulesEditor.App.exe`.
-There is no installer, nothing is written into the system, and uninstalling
-means deleting the folder.
+There is no installer and nothing is written into the registry, but the program
+keeps the game's pristine archives and the database of your edits next to
+itself: before deleting the folder, press Revert, and save anything worth
+keeping with Export….
+
+**If another author's mod is already installed, read "First run" before you
+start.**
 
 ## First run
 
@@ -62,6 +68,10 @@ The Changes panel lists everything collected, line by line, so you can see
 what is about to go into the game before it does.
 
 ![The Changes panel open at the bottom of the window: lines such as "Territory 1.TIME → 15" and "Alim Caravan.POP → 0"](docs/images/changes.en.png)
+
+**Playing over the network.** Apply writes both of the game's archives, the
+multiplayer one included: your rules will no longer match your opponent's.
+Press Revert before playing online, and apply again afterwards.
 
 ### Two languages, set separately
 
