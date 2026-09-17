@@ -2,7 +2,7 @@
 
 Russian: [game-data.md](game-data.md)
 
-Everything Rise of Legends ships is packed into `.big` archives in the `BIGS\`
+Rise of Legends stores everything it ships in `.big` archives in the `BIGS\`
 folder of the installation: rules, text, models, textures, effects, shaders,
 scripts. 46 archives, 11 591 entries between them. The engine does not read
 loose files sitting next to the archives — you cannot drop a mod in as a
@@ -11,7 +11,7 @@ separate folder; the only thing you can change is what is inside the archives.
 What follows is a map: which archive is responsible for what, which rule files
 live in it, how the files point at each other, and which format traps catch
 everyone opening this data for the first time. There are five traps, and each
-one costs an evening to whoever did not know about it.
+one costs an evening to the reader who did not know about it.
 
 ## Archives by role
 
@@ -148,7 +148,7 @@ the game is running changes nothing on screen: every check of an edit needs a
 full exit and a fresh launch.
 
 And the rule that covers all of them: **keep a copy of the original archive**.
-It is the only way back.
+It is the only way to restore what you break.
 
 ## How the files point at each other
 
@@ -176,9 +176,9 @@ unit_materials.xml <MATERIAL material_name="Worker.fx">
         files: art\units\<category>\<name>.tga   (DDS inside)
 ```
 
-The `GRAPH` references that fail are not lost units but service
-pseudo-entities: `BaseHeroUnit`, `BaseGrunt`, `Spell Obj`, `Static Areaspell
-Unit`, `old_*`.
+The `GRAPH` references that fail are not lost units but internal placeholder
+entities: `BaseHeroUnit`, `BaseGrunt`, `Spell Obj`, `Static Areaspell Unit`,
+`old_*`.
 
 **Buildings work differently.** `buildingrules.GRAPH` leads into
 `building_graphics.xml`, where the element is called `<BUILD type=… file=…>`
@@ -241,8 +241,8 @@ icon, which is not the same thing as having no `ENTRY` at all.
 
 The icon atlases are **uncompressed** DDS: `ddspf.dwFlags = 0x41`
 (`DDPF_RGB | DDPF_ALPHAPIXELS`), 32 bits, `A8R8G8B8` masks, no mipmaps, file
-size exactly 128 + w·h·4 bytes. No DXT block decoder is needed: reading them is
-skipping the header and copying the tail.
+size exactly 128 + w·h·4 bytes. No DXT block decoder is needed: to read one is
+to skip the header and copy the tail.
 
 Separately, `data\icon_texs.xml` (and its binary twin `init_icon_texs` from
 `ui_render_manager.big`) describes the resource and interface icons. It also
@@ -399,10 +399,16 @@ comment is a hint; a measurement is the answer.
 sets of archives from earlier versions, declared in `bigmanifest` under a
 `BIG_PATCH` section. These are the studio's build instructions and payload for
 an external updater, not game data: over a full session the engine opens 45
-archives, all of them from the root of `BIGS\`, and not one file from the patch
-folders. Even the declared `patches\patch9` slot, filled in by hand, stays
-unread. Shipping a mod as a separate patch folder instead of editing the
+archives, every one of them from the root of `BIGS\`, and not one file from the
+patch folders. Even the declared `patches\patch9` slot, filled in by hand,
+stays unread. Shipping a mod as a separate patch folder instead of editing the
 archive is not possible.
+
+The gap between 45 and the 46 archives in the root is not a typo and not a
+patch folder being read: one root archive simply went untouched over that
+session, and which one was not established — a single session has no reason to
+load every tileset. What the measurement settles is the other direction:
+everything the engine did open came from the root.
 
 A side note: `patches\patch4\strings.big`, `patch5\*` and `patch6\*` were not
 built on the build server — their headers carry the machine names `PLAYTEST-10`
